@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .add-weather {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .add-weather h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .weather-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+        
+        .weather-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .weather-card h3 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .weather-info {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        .weather-info strong {
+            color: #333;
+        }
+        
+        .temperature {
+            font-size: 2rem;
+            color: #764ba2;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            padding: 50px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+        }
+        
+        .recorded-time {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌤️ Weather Dashboard</h1>
+        
+        <div class="add-weather">
+            <h2>Add Weather Data</h2>
+            <form th:action="@{/weather/add}" th:object="${weather}" method="post">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="city">City:</label>
+                        <input type="text" id="city" th:field="*{city}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="temperature">Temperature (°C):</label>
+                        <input type="number" step="0.1" id="temperature" th:field="*{temperature}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <input type="text" id="description" th:field="*{description}" placeholder="e.g., Sunny, Cloudy">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="humidity">Humidity (%):</label>
+                        <input type="number" id="humidity" th:field="*{humidity}" min="0" max="100">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="windSpeed">Wind Speed (km/h):</label>
+                        <input type="number" step="0.1" id="windSpeed" th:field="*{windSpeed}">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Add Weather Data</button>
+            </form>
+        </div>
+        
+        <div class="weather-grid" th:if="${not #lists.isEmpty(weatherList)}">
+            <div class="weather-card" th:each="w : ${weatherList}">
+                <h3 th:text="${w.city}">City</h3>
+                <div class="temperature" th:text="${w.temperature + '°C'}">Temperature</div>
+                <div class="weather-info" th:if="${w.description}">
+                    <strong>Condition:</strong> <span th:text="${w.description}">Description</span>
+                </div>
+                <div class="weather-info" th:if="${w.humidity ne null}">
+                    <strong>Humidity:</strong> <span th:text="${w.humidity + '%'}">Humidity</span>
+                </div>
+                <div class="weather-info" th:if="${w.windSpeed ne null}">
+                    <strong>Wind Speed:</strong> <span th:text="${w.windSpeed + ' km/h'}">Wind Speed</span>
+                </div>
+                <div class="recorded-time" th:text="'Recorded: ' + ${#temporals.format(w.recordedAt, 'yyyy-MM-dd HH:mm')}">
+                    Recorded Time
+                </div>
+                <br>
+                <a th:href="@{/weather/delete/{id}(id=${w.id})}" class="btn btn-danger" 
+                   onclick="return confirm('Are you sure you want to delete this weather data?')">Delete</a>
+            </div>
+        </div>
+        
+        <div class="no-data" th:if="${#lists.isEmpty(weatherList)}">
+            <p>No weather data available. Add some data above!</p>
+        </div>
+    </div>
+</body>
+</html>
