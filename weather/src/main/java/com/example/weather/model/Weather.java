@@ -1,5 +1,6 @@
 package com.example.weather.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -25,6 +26,11 @@ public class Weather {
     
     @Column(name = "recorded_at")
     private LocalDateTime recordedAt;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private User user;
     
     public Weather() {
         this.recordedAt = LocalDateTime.now();
@@ -94,5 +100,13 @@ public class Weather {
     
     public void setRecordedAt(LocalDateTime recordedAt) {
         this.recordedAt = recordedAt;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
     }
 }
